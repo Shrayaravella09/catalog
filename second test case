@@ -1,0 +1,114 @@
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ShamirSecretSharing {
+
+    public static BigInteger decodeBaseValue(int base, String value) {
+        return new BigInteger(value, base);
+    }
+
+    public static BigInteger lagrangeInterpolation(List<BigInteger> xValues, List<BigInteger> yValues, int k) {
+        BigInteger c = BigInteger.ZERO;
+        for (int j = 0; j < k; j++) {
+            BigInteger term = yValues.get(j);
+            for (int m = 0; m < k; m++) {
+                if (m != j) {
+                    BigInteger x_j = xValues.get(j);
+                    BigInteger x_m = xValues.get(m);
+                    BigInteger numerator = BigInteger.ZERO.subtract(x_m);
+                    BigInteger denominator = x_j.subtract(x_m);
+                    term = term.multiply(numerator).divide(denominator);
+                }
+            }
+            c = c.add(term);
+        }
+        return c;
+    }
+
+    public static void findConstantTerm(Map<String, Object> data) {
+        Map<String, Integer> keys = (Map<String, Integer>) data.get("keys");
+        int n = keys.get("n");
+        int k = keys.get("k");
+
+        List<BigInteger> xValues = new ArrayList<>();
+        List<BigInteger> yValues = new ArrayList<>();
+
+        for (String key : data.keySet()) {
+            if (key.equals("keys")) continue;
+
+            Map<String, String> point = (Map<String, String>) data.get(key);
+            int base = Integer.parseInt(point.get("base"));
+            String value = point.get("value");
+
+            BigInteger x = new BigInteger(key);
+            BigInteger y = decodeBaseValue(base, value);
+
+            xValues.add(x);
+            yValues.add(y);
+
+            if (xValues.size() == k) break;
+        }
+
+        BigInteger constantTerm = lagrangeInterpolation(xValues, yValues, k);
+        System.out.println(constantTerm);
+    }
+
+    public static void main(String[] args) {
+        Map<String, Object> inputData = new HashMap<>();
+        
+        Map<String, Integer> keys = new HashMap<>();
+        keys.put("n", 9);
+        keys.put("k", 6);
+        inputData.put("keys", keys);
+
+        Map<String, String> point1 = new HashMap<>();
+        point1.put("base", "10");
+        point1.put("value", "28735619723837");
+        inputData.put("1", point1);
+
+        Map<String, String> point2 = new HashMap<>();
+        point2.put("base", "16");
+        point2.put("value", "1A228867F0CA");
+        inputData.put("2", point2);
+
+        Map<String, String> point3 = new HashMap<>();
+        point3.put("base", "12");
+        point3.put("value", "32811A4AA0B7B");
+        inputData.put("3", point3);
+
+        Map<String, String> point4 = new HashMap<>();
+        point4.put("base", "11");
+        point4.put("value", "917978721331A");
+        inputData.put("4", point4);
+
+        Map<String, String> point5 = new HashMap<>();
+        point5.put("base", "16");
+        point5.put("value", "1A22886782E1");
+        inputData.put("5", point5);
+
+        Map<String, String> point6 = new HashMap<>();
+        point6.put("base", "10");
+        point6.put("value", "28735619654702");
+        inputData.put("6", point6);
+
+        Map<String, String> point7 = new HashMap<>();
+        point7.put("base", "14");
+        point7.put("value", "71AB5070CC4B");
+        inputData.put("7", point7);
+
+        Map<String, String> point8 = new HashMap<>();
+        point8.put("base", "9");
+        point8.put("value", "122662581541670");
+        inputData.put("8", point8);
+
+        Map<String, String> point9 = new HashMap<>();
+        point9.put("base", "8");
+        point9.put("value", "642121030037605");
+        inputData.put("9", point9);
+
+        findConstantTerm(inputData);
+    }
+}
