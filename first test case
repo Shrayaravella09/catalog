@@ -1,0 +1,96 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ShamirSecretSharing {
+
+    // Function to decode the value based on its base
+    public static int decodeBaseValue(int base, String value) {
+        return Integer.parseInt(value, base);
+    }
+
+    // Function to calculate the constant term (c) using Lagrange interpolation
+    public static double lagrangeInterpolation(List<Integer> xValues, List<Integer> yValues, int k) {
+        double constantTerm = 0.0;
+        for (int j = 0; j < k; j++) {
+            double term = yValues.get(j);  // Start with y_j value
+            for (int m = 0; m < k; m++) {
+                if (m != j) {
+                    term *= (0.0 - xValues.get(m)) / (xValues.get(j) - xValues.get(m));  // Lagrange interpolation formula
+                }
+            }
+            constantTerm += term;
+        }
+        return constantTerm;  // Return the calculated constant term
+    }
+
+    // Function to find the constant term based on given data
+    public static void findConstantTerm(Map<String, Object> data) {
+        @SuppressWarnings("unchecked")
+        Map<String, Integer> keys = (Map<String, Integer>) data.get("keys");  // Safely cast to Map<String, Integer>
+        int n = keys.get("n");
+        int k = keys.get("k");
+
+        List<Integer> xValues = new ArrayList<>();
+        List<Integer> yValues = new ArrayList<>();
+
+        // Iterate through all the points
+        for (String key : data.keySet()) {
+            if (key.equals("keys")) continue;  // Skip the 'keys' entry
+
+            @SuppressWarnings("unchecked")
+            Map<String, String> point = (Map<String, String>) data.get(key);  // Safely cast to Map<String, String>
+            int base = Integer.parseInt(point.get("base"));
+            String value = point.get("value");
+
+            int x = Integer.parseInt(key);  // x is the key of the point
+            int y = decodeBaseValue(base, value);  // y is the decoded value
+
+            xValues.add(x);
+            yValues.add(y);
+
+            if (xValues.size() == k) break;  // Stop after collecting k points
+        }
+
+        // Calculate the constant term using Lagrange interpolation
+        double constantTerm = lagrangeInterpolation(xValues, yValues, k);
+        System.out.println((int) Math.round(constantTerm));  // Print the rounded constant term
+    }
+
+    // Main function to define the input and call the function
+    public static void main(String[] args) {
+        // Manually created input map for the given problem
+        Map<String, Object> inputData = new HashMap<>();
+        
+        // Create the "keys" map
+        Map<String, Integer> keys = new HashMap<>();
+        keys.put("n", 4);
+        keys.put("k", 3);
+        inputData.put("keys", keys);
+
+        // Create points for the polynomial roots
+        Map<String, String> point1 = new HashMap<>();
+        point1.put("base", "10");
+        point1.put("value", "4");
+        inputData.put("1", point1);
+
+        Map<String, String> point2 = new HashMap<>();
+        point2.put("base", "2");
+        point2.put("value", "111");
+        inputData.put("2", point2);
+
+        Map<String, String> point3 = new HashMap<>();
+        point3.put("base", "10");
+        point3.put("value", "12");
+        inputData.put("3", point3);
+
+        Map<String, String> point6 = new HashMap<>();
+        point6.put("base", "4");
+        point6.put("value", "213");
+        inputData.put("6", point6);
+
+        // Call the function to find the constant term
+        findConstantTerm(inputData);
+    }
+}
